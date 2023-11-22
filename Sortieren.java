@@ -1,4 +1,3 @@
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
@@ -75,11 +74,11 @@ public class Sortieren {
     private int bZeitMax = 0;
     private int bZeitMin = 0;
 
-    public Sortieren() throws FileNotFoundException {
+    public Sortieren() {
         load();
     }
 
-    public void load() throws FileNotFoundException {
+    public void load() {
         Properties properties = new Properties();
         java.net.URL url = ClassLoader.getSystemResource("config.properties");
 
@@ -90,10 +89,10 @@ public class Sortieren {
             showEveryChange = Boolean.parseBoolean(properties.getProperty("showEveryChange"));
             showTime = Boolean.parseBoolean(properties.getProperty("showTime"));
         } catch (FileNotFoundException fie) {
-            fie.printStackTrace();
+            System.out.println("Konfigurationsdatei nicht gefunden!");
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Fehler beim Laden der Konfigurationsdatei!");
         }
     }
 
