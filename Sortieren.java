@@ -1,27 +1,30 @@
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.Random;
-import java.util.Scanner;
+
 
 public class Sortieren {
-
     /**
      * Gibt an, ob die sortierten Arrays ausgegeben werden sollen
      */
-    private final boolean showArrays = false;
+    private boolean showArrays = false;
 
     /**
      * Gibt an, ob die unsortierten Arrays ausgegeben werden sollen
      */
-    private final boolean showStartArray = false;
-
-    /**
-     * Gibt an, ob die Zeit ausgegeben werden soll
-     */
-    private final boolean showTime = true;
+    private boolean showStartArray = false;
 
     /**
      * Gibt an, ob jede Änderung ausgegeben werden soll
      */
-    private final boolean showEveryChange = false;
+    private boolean showEveryChange = false;
+
+    /**
+     * Gibt an, ob die Zeit ausgegeben werden soll
+     */
+    private boolean showTime = false;
 
     /**
      * Liste mit zufälligen Zahlen
@@ -72,73 +75,75 @@ public class Sortieren {
     private int bZeitMax = 0;
     private int bZeitMin = 0;
 
-    private boolean bs = false;
-    private boolean is = false;
-    private boolean ss = false;
+    public Sortieren() throws FileNotFoundException {
+        load();
+    }
 
-    public Sortieren(int length, int durchlaeufe) {
-        liste = new int[length];
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Soll Insertion Sort ausgeführt werden? (y/n)");
-        if (scanner.nextLine().equals("y")) {
-            is = true;
-        }
-        System.out.println("Soll Selection Sort ausgeführt werden? (y/n)");
-        if (scanner.nextLine().equals("y")) {
-            ss = true;
-        }
-        System.out.println("Soll Bubble Sort ausgeführt werden? (y/n)");
-        if (scanner.nextLine().equals("y")) {
-            bs = true;
-        }
-        if (!is && !ss && !bs) {
-            System.out.println("Es muss mindestens ein Sortierverfahren ausgewählt werden!");
-            System.exit(0);
-        }
-        for (int i = 0; i < durchlaeufe; i++) {
-            generateNumbers();
-            if (is) {
-                insertionSort(liste.clone());
-            }
-            if (ss) {
-                selectionSort(liste.clone());
-            }
-            if (bs) {
-                bubbleSort(liste.clone());
-            }
-            resetCounter();
-        }
+    public void load() throws FileNotFoundException {
+        Properties properties = new Properties();
+        java.net.URL url = ClassLoader.getSystemResource("config.properties");
 
-        System.out.println("Listen: " + durchlaeufe);
-        System.out.println("Länge: " + length + "\n");
-        if (is) {
+        try  {
+            properties.load(url.openStream());
+            showArrays = Boolean.parseBoolean(properties.getProperty("showArrays"));
+            showStartArray = Boolean.parseBoolean(properties.getProperty("showStartArray"));
+            showEveryChange = Boolean.parseBoolean(properties.getProperty("showEveryChange"));
+            showTime = Boolean.parseBoolean(properties.getProperty("showTime"));
+        } catch (FileNotFoundException fie) {
+            fie.printStackTrace();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sortieren(int pLength, boolean pis, boolean pss, boolean pbs) {
+        liste = new int[pLength];
+        generateNumbers();
+
+        if (pis) {
+            insertionSort();
+        }
+        if (pss) {
+            selectionSort();
+        }
+        if (pbs) {
+            bubbleSort();
+        }
+        resetCounter();
+    }
+
+    public void ergebnis(int pLength, int pDurchlaeufe, boolean pis, boolean pss, boolean pbs) {
+        System.out.println("Listen: " + pDurchlaeufe);
+        System.out.println("Länge: " + pLength + "\n");
+        if (pis) {
             System.out.println("Insertion Sort:\n");
             System.out.println("Durchschnittswerte:");
-            System.out.println("Durchläufe: " + iCounterAverage / durchlaeufe);
-            System.out.println("Änderungen: " + iChangeCounterAverage / durchlaeufe);
-            System.out.println("Zeit: " + iZeitAverage / 1000 / durchlaeufe + "s\n");
+            System.out.println("Durchläufe: " + iCounterAverage / pDurchlaeufe);
+            System.out.println("Änderungen: " + iChangeCounterAverage / pDurchlaeufe);
+            System.out.println("Zeit: " + iZeitAverage / 1000 / pDurchlaeufe + "s\n");
             System.out.println("Maximum/Minimum:");
             System.out.println("Durchläufe: " + iCounterMax + "/" + iCounterMin);
             System.out.println("Änderungen: " + iChangeCounterMax + "/" + iChangeCounterMin);
             System.out.println("Zeit: " + iZeitMax / 1000 + "/" + iZeitMin / 1000 + "s\n\n");
         }
-        if (ss) {
+        if (pss) {
             System.out.println("Selection Sort:\n");
             System.out.println("Durchschnittswerte:");
-            System.out.println("Durchläufe: " + sCounterAverage / durchlaeufe);
-            System.out.println("Änderungen: " + sChangeCounterAverage / durchlaeufe);
-            System.out.println("Zeit: " + sZeitAverage / durchlaeufe / 1000000 + "ms\n");
+            System.out.println("Durchläufe: " + sCounterAverage / pDurchlaeufe);
+            System.out.println("Änderungen: " + sChangeCounterAverage / pDurchlaeufe);
+            System.out.println("Zeit: " + sZeitAverage / pDurchlaeufe / 1000000 + "ms\n");
             System.out.println("Maximum/Minimum:");
             System.out.println("Durchläufe: " + sCounterMax + "/" + sCounterMin);
             System.out.println("Änderungen: " + sChangeCounterMax + "/" + sChangeCounterMin);
             System.out.println("Zeit: " + sZeitMax / 1000000 + "/" + sZeitMin / 1000000 + "ms\n\n");
         }
-        if (bs) {
+        if (pbs) {
             System.out.println("Bubble Sort:\n");
             System.out.println("Durchschnittswerte:");
-            System.out.println("Durchläufe: " + bCounterAverage / durchlaeufe);
-            System.out.println("Änderungen: " + bChangeCounterAverage / durchlaeufe);
-            System.out.println("Zeit: " + bZeitAverage / durchlaeufe / 1000000 + "ms\n");
+            System.out.println("Durchläufe: " + bCounterAverage / pDurchlaeufe);
+            System.out.println("Änderungen: " + bChangeCounterAverage / pDurchlaeufe);
+            System.out.println("Zeit: " + bZeitAverage / pDurchlaeufe / 1000000 + "ms\n");
             System.out.println("Maximum/Minimum:");
             System.out.println("Durchläufe: " + bCounterMax + "/" + bCounterMin);
             System.out.println("Änderungen: " + bChangeCounterMax + "/" + bChangeCounterMin);
@@ -176,31 +181,36 @@ public class Sortieren {
         bZeit = 0;
     }
 
+    public void printTime(long pStart, long pEnd, long pFaktor) {
+        if (showTime) {
+            System.out.println("Ende: " + (double) ((pEnd - pStart) / pFaktor) + "ms");
+        }
+    }
+
     /**
      * Sortiert alle Zahlen per InsertionSort
      */
-    public void insertionSort(int[] pArray) {
+    public void insertionSort() {
+        int[] array = liste.clone();
         long start = System.currentTimeMillis();
         int zahl1;
-        for (int i = 1; i < pArray.length; i++) {
-            zahl1 = pArray[i];
+        for (int i = 1; i < array.length; i++) {
+            zahl1 = array[i];
             for (int j = 0; j < i; j++) {
-                if (zahl1 < pArray[j]) {
-                    pArray[i] = pArray[j];
-                    pArray[j] = zahl1;
+                if (zahl1 < array[j]) {
+                    array[i] = array[j];
+                    array[j] = zahl1;
                     i = 1;
                     iChangeCounter++;
                     if (showEveryChange) {
-                        printArray(pArray);
+                        printArray(array);
                     }
                 }
             }
             iCounter++;
         }
         long end = System.currentTimeMillis();
-        if (showTime) {
-            System.out.println("Ende: " + (double) ((end - start) / 1000000) + "ms");
-        }
+        printTime(start, end, 1);
         iCounterAverage += iCounter;
         iChangeCounterAverage += iChangeCounter;
         iZeit = (int) (end - start);
@@ -224,36 +234,35 @@ public class Sortieren {
             iZeitMin = iZeit;
         }
         if (showArrays) {
-            printArray(pArray);
+            printArray(array);
         }
     }
 
     /**
      * Sortiert alle Zahlen per SelectionSort
      */
-    public void selectionSort(int[] pArray) {
+    public void selectionSort() {
+        int[] array = liste.clone();
         long start = System.nanoTime();
-        for (int j = pArray.length - 1; j >= 0; j--) {
+        for (int j = array.length - 1; j >= 0; j--) {
             int zahl = -1;
             int indexMax = -1;
             for (int i = 0; i <= j; i++) {
-                if (pArray[i] > zahl) {
-                    zahl = pArray[i];
+                if (array[i] > zahl) {
+                    zahl = array[i];
                     indexMax = i;
                     sChangeCounter++;
                     if (showEveryChange) {
-                        printArray(pArray);
+                        printArray(array);
                     }
                     sCounter++;
                 }
             }
-            pArray[indexMax] = pArray[j];
-            pArray[j] = zahl;
+            array[indexMax] = array[j];
+            array[j] = zahl;
         }
         long end = System.nanoTime();
-        if (showTime) {
-            System.out.println("Ende: " + (double) ((end - start) / 1000000) + "ms");
-        }
+        printTime(start, end, 1000000);
         sChangeCounterAverage += sChangeCounter;
         sCounterAverage += sCounter;
         sZeit = (int) (end - start);
@@ -277,34 +286,33 @@ public class Sortieren {
             sZeitMin = sZeit;
         }
         if (showArrays) {
-            printArray(pArray);
+            printArray(array);
         }
     }
 
     /**
      * Sortiert alle Zahlen per BubbleSort
      */
-    public void bubbleSort(int[] pArray) {
+    public void bubbleSort() {
+        int[] array = liste.clone();
         long start = System.nanoTime();
-        for (int i = 0; i < pArray.length - 1; i++) {
-            int zahl = pArray[0];
-            for (int j = 1; j < pArray.length; j++) {
+        for (int i = 0; i < array.length - 1; i++) {
+            int zahl = array[0];
+            for (int j = 1; j < array.length; j++) {
                 bCounter++;
-                if (pArray[j] < zahl) {
-                    pArray[j - 1] = pArray[j];
-                    pArray[j] = zahl;
+                if (array[j] < zahl) {
+                    array[j - 1] = array[j];
+                    array[j] = zahl;
                     bChangeCounter++;
                     if (showEveryChange) {
-                        printArray(pArray);
+                        printArray(array);
                     }
                 }
-                zahl = pArray[j];
+                zahl = array[j];
             }
         }
         long end = System.nanoTime();
-        if (showTime) {
-            System.out.println("Ende: " + (double) ((end - start) / 1000000) + "ms");
-        }
+        printTime(start, end, 1000000);
         bChangeCounterAverage += bChangeCounter;
         bCounterAverage += bCounter;
         bZeit = (int) (end - start);
@@ -328,7 +336,7 @@ public class Sortieren {
             bZeitMin = bZeit;
         }
         if (showArrays) {
-            printArray(pArray);
+            printArray(array);
         }
     }
 
